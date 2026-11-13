@@ -116,3 +116,11 @@ Test: `godot --path . res://tools/scrolltest.tscn`.
 ## Themes
 Candy (default), Night, Meadow, Bubblegum, Parchment, **Black & White**, **White on Black**.
 Levels 1-100 are 96x96, 101-1000 are 128x128.
+
+## Website (GitHub Pages)
+The game page, Privacy Policy and Terms live in `docs/` (static HTML/CSS/JS, no build step):
+- `docs/index.html` - landing page with a playable 6x6 demo (puzzles from the game's own generator, `tools/make_site_assets.gd`)
+- `docs/privacy.html`, `docs/terms.html` - use the privacy URL in Play Console
+- `docs/assets/js/site-config.js` - set `live: true` once the app is on Google Play to turn the buttons into real store links
+- Preview locally: `npx http-server docs` (or any static server)
+- Published at https://md-sharik.github.io/portfolio/ (Settings > Pages > main /docs)

@@ -55,7 +55,7 @@ func is_active() -> bool:
 func _setup_admob() -> void:
 	var script: GDScript = load(ADMOB_SCRIPT)
 	_admob = script.new()
-	_admob.is_real = Config.IS_REAL
+	_admob.is_real = Config.IS_REAL and not OS.is_debug_build()   # never real ads in debug builds
 	_admob.android_real_banner_id = Config.REAL_BANNER_ID
 	_admob.android_real_interstitial_id = Config.REAL_INTERSTITIAL_ID
 	_admob.android_real_rewarded_id = Config.REAL_REWARDED_ID

@@ -56,8 +56,8 @@ func _build() -> void:
 
 	var pal_btn: Control = IconButton.new()
 	pal_btn.kind = "palette"
-	pal_btn.position = Vector2(w - 154, 40)
-	pal_btn.size = Vector2(100, 100)
+	pal_btn.position = Vector2(w - 130, 22)
+	pal_btn.size = Vector2(88, 88)
 	pal_btn.pressed.connect(func(): Save.cycle_theme())
 	add_child(pal_btn)
 

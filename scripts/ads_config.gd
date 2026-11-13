@@ -1,5 +1,7 @@
 extends RefCounted
-## AdMob settings. EVERYTHING is on Google's TEST ads right now - safe to tap, earns nothing.
+## AdMob settings. Release builds show REAL ads (your AdMob units below); debug builds always
+## show Google TEST ads so you never tap your own live ads (that can get an account banned).
+## Application ID (with ~) lives in addons/AdmobPlugin/android_export.cfg.
 ##
 ## To go live:
 ##   1. Create an app + 3 ad units (banner, interstitial, rewarded) in https://admob.google.com
@@ -9,12 +11,12 @@ extends RefCounted
 ##   4. Rebuild the APK/AAB.
 
 const ENABLED := true
-const IS_REAL := false
+const IS_REAL := true     # real ads in RELEASE builds; debug builds always get Google test ads
 
 # Real ad unit IDs (only used when IS_REAL = true)
-const REAL_BANNER_ID := ""
-const REAL_INTERSTITIAL_ID := ""
-const REAL_REWARDED_ID := ""
+const REAL_BANNER_ID := "ca-app-pub-2408586648009670/8260831950"
+const REAL_INTERSTITIAL_ID := "ca-app-pub-2408586648009670/8021992954"
+const REAL_REWARDED_ID := "ca-app-pub-2408586648009670/2920554565"
 
 ## Show a full-screen ad after every N cleared levels (0 = never). Rewarded ads are always opt-in.
 const INTERSTITIAL_EVERY := 3

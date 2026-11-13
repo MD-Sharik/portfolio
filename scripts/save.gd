@@ -69,6 +69,11 @@ func complete_level(n: int) -> void:
 	save_game()
 
 
+func add_hint() -> void:
+	hints = mini(MAX_HINTS, hints + 1)
+	save_game()
+
+
 func use_hint() -> bool:
 	if hints <= 0:
 		return false

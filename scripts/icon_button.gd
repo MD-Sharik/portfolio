@@ -8,6 +8,7 @@ signal pressed
 @export var interactive: bool = true
 @export var filled: bool = true       # drop: full / empty
 var badge: int = -1                   # small number bubble (hint count); -1 = none
+var badge_text := ""                  # or a word instead of a number (e.g. "AD")
 
 const TINTS := {
 	"back": Color("ff9f1c"), "palette": Color("ff5c8a"), "settings": Color("3da5f4"),
@@ -26,6 +27,12 @@ func _ready() -> void:
 
 func set_badge(v: int) -> void:
 	badge = v
+	badge_text = ""
+	queue_redraw()
+
+
+func set_badge_text(t: String) -> void:
+	badge_text = t
 	queue_redraw()
 
 
@@ -68,7 +75,7 @@ func _draw() -> void:
 	if kind == "drop":
 		_draw_drop(col, m)
 		return
-	var tint: Color = TINTS.get(kind, Color("ff9f1c"))
+	var tint: Color = col.get("btn", TINTS.get(kind, Color("ff9f1c")))
 	var center := size * 0.5
 	var r := m * 0.5
 	# disc: soft shadow, darker rim, bright face, glossy highlight
@@ -79,7 +86,7 @@ func _draw() -> void:
 	var k := m / 100.0 * 0.56
 	var off := (size - Vector2(100, 100) * k) * 0.5 - Vector2(0, m * 0.012)
 	draw_set_transform(off, 0.0, Vector2(k, k))
-	var w := Color.WHITE
+	var w: Color = col.get("btn_glyph", Color.WHITE)
 	match kind:
 		"back":
 			_rl(Vector2(86, 50), Vector2(20, 50), 14, w)
@@ -114,14 +121,16 @@ func _draw() -> void:
 			for ray in [[Vector2(50, 0), Vector2(50, 7)], [Vector2(18, 12), Vector2(23, 17)], [Vector2(82, 12), Vector2(77, 17)]]:
 				_rl(ray[0], ray[1], 6, w)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
-	if badge >= 0:
-		var br := m * 0.22
-		var p := Vector2(size.x * 0.86, size.y * 0.12)
+	if badge >= 0 or badge_text != "":
+		var is_text := badge_text != ""
+		var br := m * (0.25 if is_text else 0.22)
+		var p := Vector2(size.x * 0.84, size.y * 0.12)
+		var fill: Color = Color("ff6a00") if is_text else (Color("2fbf71") if badge > 0 else col.dim)
 		draw_circle(p, br * 1.12, Color.WHITE)
-		draw_circle(p, br, Color("2fbf71") if badge > 0 else col.dim)
+		draw_circle(p, br, fill)
 		var f := ThemeDB.fallback_font
-		var fs := int(br * 1.45)
-		draw_string(f, p + Vector2(-br, fs * 0.34), str(badge), HORIZONTAL_ALIGNMENT_CENTER, br * 2.0, fs, Color.WHITE)
+		var fs := int(br * (1.05 if is_text else 1.45))
+		draw_string(f, p + Vector2(-br, fs * 0.34), badge_text if is_text else str(badge), HORIZONTAL_ALIGNMENT_CENTER, br * 2.0, fs, Color.WHITE)
 
 
 func _draw_drop(col: Dictionary, m: float) -> void:

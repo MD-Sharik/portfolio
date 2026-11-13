@@ -53,6 +53,29 @@ const THEMES := [
 		"arrows": [Color("7a5233")],
 		"deco": [Color("eadcc0"), Color("e6d2ac"), Color("efe3cb")],
 	},
+	{ # Black & White - black arrows on white paper
+		"name": "Black & White",
+		"bg": Color("ffffff"), "line": Color("111111"), "title": Color("111111"),
+		"rule": Color("d4d4d4"), "panel": Color("ffffff"), "footer": Color("111111"),
+		"footer_text": Color("ffffff"), "drop": Color("222222"), "danger": Color("e03131"),
+		"hint": Color("8a8a8a"), "dim": Color("b5b5b5"), "gold": Color("111111"),
+		"arrows": [Color("111111")],
+		"deco": [Color("f0f0f0"), Color("e8e8e8"), Color("f6f6f6")],
+		"btn": Color("111111"), "btn_glyph": Color("ffffff"),
+		"confetti": [Color("111111"), Color("666666"), Color("aaaaaa")],
+	},
+	{ # White on Black - white arrows on a black board
+		"name": "White on Black",
+		"bg": Color("0d0d0d"), "line": Color("f2f2f2"), "title": Color("ffffff"),
+		"rule": Color("333333"), "panel": Color("1c1c1c"), "footer": Color("1c1c1c"),
+		"footer_text": Color("f2f2f2"), "drop": Color("f2f2f2"), "danger": Color("ff5252"),
+		"hint": Color("9e9e9e"), "dim": Color("666666"), "gold": Color("f2f2f2"),
+		"on_gold": Color("0d0d0d"),
+		"arrows": [Color("f5f5f5")],
+		"deco": [Color("1a1a1a"), Color("222222"), Color("141414")],
+		"btn": Color("f2f2f2"), "btn_glyph": Color("0d0d0d"),
+		"confetti": [Color("ffffff"), Color("9e9e9e"), Color("5a5a5a")],
+	},
 ]
 
 

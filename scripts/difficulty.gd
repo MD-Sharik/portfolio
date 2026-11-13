@@ -9,6 +9,8 @@ extends RefCounted
 
 const ALL_LEVELS_MAX := true
 const MAX_SIZE := 128
+const EARLY_LEVELS := 100      # levels 1..100 use a smaller board ...
+const EARLY_SIZE := 96         # ... 96x96 instead of 128x128
 const SHAPES := ["ellipse", "diamond", "heart", "hourglass", "cross", "triangle", "ring", "trophy"]
 
 
@@ -47,8 +49,9 @@ static func params_for(n: int) -> Dictionary:
 	if shape != "rect":
 		wi = maxi(wi, 9)
 		hi = maxi(hi, 9)
-	wi = mini(wi, MAX_SIZE)
-	hi = mini(hi, MAX_SIZE)
+	var cap := EARLY_SIZE if (ALL_LEVELS_MAX and n <= EARLY_LEVELS) else MAX_SIZE
+	wi = mini(wi, cap)
+	hi = mini(hi, cap)
 
 	var max_len: int = clampi(int(round(lerpf(3.0, 40.0, e))), 2, 40)
 	var min_len: int = 1 if t < 0.03 else (2 if t < 0.3 else 3)

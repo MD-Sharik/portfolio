@@ -7,12 +7,15 @@ const IconButton := preload("res://scripts/icon_button.gd")
 const UIKit := preload("res://scripts/ui_kit.gd")
 const BgDeco := preload("res://scripts/bg_deco.gd")
 
-const MAX_LIVES := 3
+const MAX_LIVES := 4        # drops at the start of every level
+const MAX_DROPS := 6        # watching ads can add drops, up to this many
 
 var level_n := 1
 var level_seed := ""
 var lives := MAX_LIVES
+var life_slots := MAX_LIVES
 var mistakes := 0
+var plus_btn: Button
 
 var bg: ColorRect
 var back_btn: Control
@@ -36,6 +39,7 @@ func _ready() -> void:
 	_layout()
 	_apply_theme()
 	_start_level(Save.current_level)
+	Ads.show_banner(true)
 
 
 # ----------------------------------------------------------------- building
@@ -58,11 +62,19 @@ func _build() -> void:
 	rule = ColorRect.new()
 	add_child(rule)
 
-	for i in MAX_LIVES:
+	for i in MAX_DROPS:
 		var d := _icon("drop", false)
 		d.interactive = false
 		d.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		drops.append(d)
+
+	plus_btn = Button.new()
+	plus_btn.text = "+1 LIFE  (AD)"
+	plus_btn.focus_mode = Control.FOCUS_NONE
+	plus_btn.add_theme_font_size_override("font_size", 38)
+	plus_btn.pressed.connect(_offer_life_ad)
+	plus_btn.visible = Ads.is_active()
+	add_child(plus_btn)
 
 	board = Board.new()
 	add_child(board)
@@ -110,6 +122,8 @@ func _layout() -> void:
 	for i in drops.size():
 		drops[i].position = Vector2(60 + i * 90, 232)
 		drops[i].size = Vector2(76, 76)
+	plus_btn.position = Vector2(w - 60 - 400, 224)
+	plus_btn.size = Vector2(400, 92)
 	var footer_h := 170.0
 	footer.position = Vector2(0, h - footer_h)
 	footer.size = Vector2(w, footer_h)
@@ -133,6 +147,7 @@ func _apply_theme() -> void:
 	title_lbl.add_theme_color_override("font_outline_color", c.panel)
 	rule.color = c.rule
 	footer.color = c.footer
+	_style_plus()
 	footer_lbl.add_theme_color_override("font_color", c.footer_text)
 	footer_lbl.add_theme_color_override("font_outline_color", c.footer_text)
 	board.queue_redraw()
@@ -147,16 +162,38 @@ func _start_level(n: int) -> void:
 	var level := LevelDB.build(n)
 	level_seed = String(LevelDB.meta(n).get("seed", ""))
 	lives = MAX_LIVES
+	life_slots = MAX_LIVES
 	mistakes = 0
 	title_lbl.text = "Level %d" % n
 	board.load_level(level)
 	_refresh_drops()
-	hint_btn.set_badge(Save.hints)
+	_refresh_hint_badge()
 
 
 func _refresh_drops() -> void:
 	for i in drops.size():
+		drops[i].visible = i < life_slots
 		drops[i].set_filled(i < lives)
+
+
+func _refresh_hint_badge() -> void:
+	if Save.hints > 0:
+		hint_btn.set_badge(Save.hints)
+	else:
+		hint_btn.set_badge_text("AD")      # out of hints: tapping offers a rewarded ad
+
+
+func _style_plus() -> void:
+	var c: Dictionary = Save.colors()
+	var bgc: Color = c.get("btn", Color("2fbf71"))
+	var fg: Color = c.get("btn_glyph", Color.WHITE)
+	var normal := UIKit.flat(bgc, 46, 0, Color.TRANSPARENT, 6)
+	var pressed := UIKit.flat(bgc.darkened(0.15), 46)
+	for k in ["normal", "hover", "focus", "disabled"]:
+		plus_btn.add_theme_stylebox_override(k, normal)
+	plus_btn.add_theme_stylebox_override("pressed", pressed)
+	for k in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_disabled_color"]:
+		plus_btn.add_theme_color_override(k, fg)
 
 
 func _on_back() -> void:
@@ -183,11 +220,11 @@ func _on_hint() -> void:
 	if board.locked:
 		return
 	if Save.hints <= 0:
-		_toast("No hints left - finish levels to earn more")
+		_offer_hint_ad()
 		return
 	if board.show_hint():
 		Save.use_hint()
-		hint_btn.set_badge(Save.hints)
+		_refresh_hint_badge()
 		Sfx.play("hint")
 		Sfx.haptic("medium")
 
@@ -198,7 +235,7 @@ func _on_cleared() -> void:
 	Sfx.play("win")
 	Sfx.haptic("win")
 	_confetti()
-	hint_btn.set_badge(Save.hints)
+	_refresh_hint_badge()
 	get_tree().create_timer(0.35).timeout.connect(func(): _show_win(flawless))
 
 
@@ -240,7 +277,7 @@ func _dialog(title: String, body: String, buttons: Array, extra: Control = null)
 		box.add_child(extra)
 	for b in buttons:
 		var primary: bool = b[2]
-		var btn := UIKit.make_button(b[0], c.gold if primary else c.panel, Color.WHITE if primary else c.line, 50)
+		var btn := UIKit.make_button(b[0], c.gold if primary else c.panel, c.get("on_gold", Color.WHITE) if primary else c.line, 50)
 		btn.pressed.connect(b[1])
 		box.add_child(btn)
 	panel.reset_size()
@@ -252,10 +289,68 @@ func _dialog(title: String, body: String, buttons: Array, extra: Control = null)
 	create_tween().tween_property(panel, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
+# ------------------------------------------------------------ rewarded ads
+
+func _offer_life_ad() -> void:
+	if board.alive_count == 0:
+		return                                   # level already cleared
+	if lives >= MAX_DROPS:
+		_toast("Drops are full!")
+		return
+	_dialog("Extra drop?", "Watch a short ad to get +1 drop.", [
+		["Watch ad   +1 drop", _watch_life_ad, true],
+		["No thanks", _close_modal, false],
+	])
+
+
+func _watch_life_ad() -> void:
+	_close_modal()
+	Ads.show_rewarded(_on_life_ad_result)
+
+
+func _on_life_ad_result(earned: bool) -> void:
+	if earned:
+		lives += 1
+		life_slots = maxi(life_slots, lives)
+		board.locked = false
+		_refresh_drops()
+		Sfx.play("hint")
+		Sfx.haptic("medium")
+		_toast("+1 drop!")
+	else:
+		_toast("Ad not ready - try again in a moment")
+		if lives <= 0:
+			get_tree().create_timer(1.0).timeout.connect(_show_fail)
+
+
+func _offer_hint_ad() -> void:
+	if not Ads.is_active():
+		_toast("No hints left - finish levels to earn more")
+		return
+	_dialog("Out of hints", "Watch a short ad to get 1 hint.", [
+		["Watch ad   +1 hint", _watch_hint_ad, true],
+		["No thanks", _close_modal, false],
+	])
+
+
+func _watch_hint_ad() -> void:
+	_close_modal()
+	Ads.show_rewarded(_on_hint_ad_result)
+
+
+func _on_hint_ad_result(earned: bool) -> void:
+	if earned:
+		Save.add_hint()
+		_refresh_hint_badge()
+		_on_hint()                               # use it right away
+	else:
+		_toast("Ad not ready - try again in a moment")
+
+
 func _show_win(flawless: bool) -> void:
 	var msg := "Flawless! No drops lost." if flawless else "Solved with %d drop%s left." % [lives, "" if lives == 1 else "s"]
 	_dialog("Level %d clear!" % level_n, msg, [
-		["Next level", func(): _start_level(level_n + 1), true],
+		["Next level", func(): Ads.maybe_interstitial(func(): _start_level(level_n + 1)), true],
 		["Menu", _on_back, false],
 	])
 
@@ -263,10 +358,14 @@ func _show_win(flawless: bool) -> void:
 func _show_fail() -> void:
 	Sfx.play("lose")
 	Sfx.haptic("lose")
-	_dialog("Out of drops", "The arrows won this round.", [
-		["Try again", func(): _start_level(level_n), true],
-		["Menu", _on_back, false],
-	])
+	var buttons: Array = []
+	if Ads.is_active() and lives < MAX_DROPS:
+		buttons.append(["Watch ad   +1 drop", _watch_life_ad, true])
+		buttons.append(["Try again", func(): _start_level(level_n), false])
+	else:
+		buttons.append(["Try again", func(): _start_level(level_n), true])
+	buttons.append(["Menu", _on_back, false])
+	_dialog("Out of drops", "The arrows won this round.", buttons)
 
 
 func _show_settings() -> void:
@@ -315,7 +414,7 @@ func _confetti() -> void:
 	p.scale_amount_min = 9.0
 	p.scale_amount_max = 17.0
 	var g := Gradient.new()
-	var cols: Array = Save.colors().arrows
+	var cols: Array = Save.colors().get("confetti", Save.colors().arrows)
 	var stops := PackedFloat32Array()
 	var colors := PackedColorArray()
 	for i in cols.size():

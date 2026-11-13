@@ -91,3 +91,28 @@ The slot under the buttons (tan strip) is where a banner ad goes.
 
 ## Difficulty switch
 `scripts/difficulty.gd` has `ALL_LEVELS_MAX := true`: every level uses the level-1000 settings (128x128). Set it to `false` and rebuild to get the gentle ramp (3x3 on level 1 up to 128x128 around level 875) back.
+
+## Ads (AdMob), lives and hints
+* 4 drops (lives) per level. Out of drops -> *Watch ad +1 drop* keeps the same board going; a
+  *+1 LIFE (AD)* pill next to the drops does the same any time (max 6 drops).
+* 3 free hints at the start (+1 for every 3 levels cleared). Out of hints -> the bulb shows **AD**;
+  tapping it offers *Watch ad +1 hint*.
+* A banner sits in the bottom strip, and a full-screen ad shows after every 3rd cleared level (at most every 90 s).
+* Everything runs on Google's **test** ads right now. Settings live in `scripts/ads_config.gd`;
+  steps to go live (real ad unit IDs, `addons/AdmobPlugin/android_export.cfg`) are in that file's header.
+* On desktop/editor a built-in simulator shows fake ads so the whole flow can be tested
+  (`godot --headless --path . res://tools/adtest.tscn`).
+* The AdMob plugin (godot-sdk-integrations/godot-admob v7.0) needs a **Gradle** export: the Android build
+  template is in `android/build` (re-install via *Project > Install Android Build Template* if missing).
+  The preset exports 64-bit ARM only (~95 MB).
+* If the app is aimed at children, set `CHILD_DIRECTED` in `ads_config.gd` and use only Families-certified ad setups;
+  for EU users add Google's consent (UMP) form before going live.
+
+## Level select
+`scripts/level_grid.gd` is a custom touch-scrolling grid (swipe + momentum, draws only visible rows)
+that replaced ScrollContainer + 1000 Buttons, which could not be swiped from a button.
+Test: `godot --path . res://tools/scrolltest.tscn`.
+
+## Themes
+Candy (default), Night, Meadow, Bubblegum, Parchment, **Black & White**, **White on Black**.
+Levels 1-100 are 96x96, 101-1000 are 128x128.

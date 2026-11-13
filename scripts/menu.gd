@@ -5,13 +5,17 @@ const LevelDB := preload("res://scripts/level_db.gd")
 const IconButton := preload("res://scripts/icon_button.gd")
 const UIKit := preload("res://scripts/ui_kit.gd")
 const BgDeco := preload("res://scripts/bg_deco.gd")
+const LevelGrid := preload("res://scripts/level_grid.gd")
 
-const COLS := 5
+const FOOTER_H := 170.0
+
+var grid_view: Control
 
 
 func _ready() -> void:
 	Save.theme_changed.connect(func(): get_tree().reload_current_scene())
 	_build()
+	Ads.show_banner(true)
 
 
 func _build() -> void:
@@ -57,7 +61,7 @@ func _build() -> void:
 	pal_btn.pressed.connect(func(): Save.cycle_theme())
 	add_child(pal_btn)
 
-	var play := UIKit.make_button("PLAY   -   Level %d" % Save.current_level, c.gold, Color.WHITE, 64, 170)
+	var play := UIKit.make_button("PLAY   -   Level %d" % Save.current_level, c.gold, c.get("on_gold", Color.WHITE), 64, 170)
 	play.position = Vector2(60, 340)
 	play.size = Vector2(w - 120, 170)
 	play.pressed.connect(func(): _open(Save.current_level))
@@ -69,50 +73,29 @@ func _build() -> void:
 	stats.size = Vector2(w, 60)
 	add_child(stats)
 
-	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(30, 620)
-	scroll.size = Vector2(w - 60, size.y - 620 - 30)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
+	# colourful footer strip (also the spot where the banner ad sits)
+	var footer := ColorRect.new()
+	footer.color = c.footer
+	footer.position = Vector2(0, size.y - FOOTER_H)
+	footer.size = Vector2(w, FOOTER_H)
+	add_child(footer)
 
-	var grid := GridContainer.new()
-	grid.columns = COLS
-	grid.add_theme_constant_override("h_separation", 16)
-	grid.add_theme_constant_override("v_separation", 16)
-	scroll.add_child(grid)
+	grid_view = LevelGrid.new()
+	grid_view.position = Vector2(30, 620)
+	grid_view.size = Vector2(w - 60, size.y - 620 - FOOTER_H - 20)
+	grid_view.count = LevelDB.count()
+	add_child(grid_view)
+	grid_view.level_pressed.connect(_on_level_pressed)
+	grid_view.scroll_to_level(Save.current_level)
 
-	var cell_w := (scroll.size.x - 16.0 * (COLS - 1)) / COLS
-	var st_lock := UIKit.flat(c.rule, 28)
-	for n in range(1, LevelDB.count() + 1):
-		var b := Button.new()
-		b.text = str(n)
-		b.custom_minimum_size = Vector2(cell_w, cell_w * 0.9)
-		b.focus_mode = Control.FOCUS_NONE
-		b.add_theme_font_size_override("font_size", 44)
-		var locked := n > Save.max_level
-		var tint: Color = pal[(n - 1) % pal.size()]
-		var st: StyleBoxFlat
-		if locked:
-			st = st_lock
-		elif Save.completed.has(n):
-			st = UIKit.flat(tint, 28, 0, Color.TRANSPARENT, 6)
-		elif n == Save.current_level:
-			st = UIKit.flat(c.panel, 28, 10, tint, 6)
-		else:
-			st = UIKit.flat(c.panel, 28, 4, tint, 4)
-		for k in ["normal", "hover", "pressed", "focus", "disabled"]:
-			b.add_theme_stylebox_override(k, st)
-		var fg: Color = c.dim if locked else (Color.WHITE if Save.completed.has(n) else tint.darkened(0.25))
-		for k in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_disabled_color"]:
-			b.add_theme_color_override(k, fg)
-		b.disabled = locked
-		b.pressed.connect(_open.bind(n))
-		grid.add_child(b)
 
-	# scroll so the current level is visible
-	var row := (mini(Save.current_level, LevelDB.count()) - 1) / COLS
-	var row_h := cell_w * 0.9 + 16.0
-	scroll.set_deferred("scroll_vertical", int(maxf(0.0, (row - 1) * row_h)))
+func _on_level_pressed(n: int) -> void:
+	if n > Save.max_level:
+		Sfx.play("wrong")
+		return
+	Sfx.haptic("light")
+	Sfx.play("tap")
+	_open(n)
 
 
 func _open(n: int) -> void:

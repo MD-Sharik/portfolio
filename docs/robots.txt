@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://md-sharik.github.io/portfolio/sitemap.xml
+Sitemap: https://arrow.nouvous.com/sitemap.xml

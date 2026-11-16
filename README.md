@@ -123,7 +123,7 @@ The game page, Privacy Policy and Terms live in `docs/` (static HTML/CSS/JS, no 
 - `docs/privacy.html`, `docs/terms.html` - use the privacy URL in Play Console
 - `docs/assets/js/site-config.js` - set `live: true` once the app is on Google Play to turn the buttons into real store links
 - Preview locally: `npx http-server docs` (or any static server)
-- Published at https://md-sharik.github.io/portfolio/ (Settings > Pages > main /docs)
+- Published at https://arrow.nouvous.com/ (Settings > Pages > main /docs)
 
 ## Review prompt and in-app updates (Google Play)
 * **Review:** after a level is cleared the game may show Google's rating card (the player never leaves the app).

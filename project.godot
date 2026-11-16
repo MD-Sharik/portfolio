@@ -13,6 +13,8 @@ config/icon="res://assets/store/icon_192.png"
 Save="*res://scripts/save.gd"
 Sfx="*res://scripts/sfx.gd"
 Ads="*res://scripts/ads.gd"
+Review="*res://scripts/review.gd"
+Updates="*res://scripts/updates.gd"
 
 [display]
 
@@ -26,7 +28,7 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/AdmobPlugin/plugin.cfg")
+enabled=PackedStringArray("res://addons/AdmobPlugin/plugin.cfg", "res://addons/InappReviewPlugin/plugin.cfg", "res://addons/InAppUpdatePlugin/plugin.cfg")
 
 [gui]
 

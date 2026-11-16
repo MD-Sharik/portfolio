@@ -14,10 +14,17 @@ var theme: int = 0
 var sound: bool = true
 var vibrate: bool = true
 var completed := {}             # level number -> true
+var first_launch_unix: int = 0  # when the game was first opened (used to time the review prompt)
+var review_last_unix: int = 0   # last time we asked for a Play Store review
+var review_count: int = 0       # how many times we asked
+var update_last_prompt_unix: int = 0   # last time we offered an in-app update
 
 
 func _ready() -> void:
 	load_game()
+	if first_launch_unix == 0:
+		first_launch_unix = int(Time.get_unix_time_from_system())
+		save_game()
 
 
 func colors() -> Dictionary:
@@ -39,6 +46,10 @@ func load_game() -> void:
 	completed = {}
 	for k in d.get("completed", []):
 		completed[int(k)] = true
+	first_launch_unix = int(d.get("first_launch_unix", 0))
+	review_last_unix = int(d.get("review_last_unix", 0))
+	review_count = int(d.get("review_count", 0))
+	update_last_prompt_unix = int(d.get("update_last_prompt_unix", 0))
 
 
 func save_game() -> void:
@@ -48,6 +59,8 @@ func save_game() -> void:
 	f.store_string(JSON.stringify({
 		"current_level": current_level, "max_level": max_level, "hints": hints,
 		"theme": theme, "sound": sound, "vibrate": vibrate, "completed": completed.keys(),
+		"first_launch_unix": first_launch_unix, "review_last_unix": review_last_unix,
+		"review_count": review_count, "update_last_prompt_unix": update_last_prompt_unix,
 	}))
 
 

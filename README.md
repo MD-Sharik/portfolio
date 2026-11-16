@@ -79,7 +79,7 @@ tools/level_maker.gd   level maker CLI                       scripts/sfx.gd     
    enable *Use Gradle Build* if you want AAB for Play Store, create/choose a keystore, Export.
 3. The project is already portrait-locked, 1080x1920 base, GL Compatibility renderer.
 
-An export preset is already in `export_presets.cfg` (package `com.arrowescape.game`, arm64 + armv7,
+An export preset is already in `export_presets.cfg` (package `com.arrowescapehard.game`, arm64 + armv7,
 no Gradle). Command-line export (needs the export templates, JDK 17 and Android SDK build-tools 35+):
 ```bash
 godot --headless --path . --export-debug "Android" build/ArrowEscape.apk
@@ -124,3 +124,18 @@ The game page, Privacy Policy and Terms live in `docs/` (static HTML/CSS/JS, no 
 - `docs/assets/js/site-config.js` - set `live: true` once the app is on Google Play to turn the buttons into real store links
 - Preview locally: `npx http-server docs` (or any static server)
 - Published at https://md-sharik.github.io/portfolio/ (Settings > Pages > main /docs)
+
+## Review prompt and in-app updates (Google Play)
+* **Review:** after a level is cleared the game may show Google's rating card (the player never leaves the app).
+  Rules (all must be true) live in `scripts/app_config.gd`: >= 5 levels cleared, installed >= 2 days, not asked in the
+  last 90 days, at most 3 times ever. Google also rate-limits it, so it may silently not appear. Settings has a
+  *Rate the game* button that opens the Play listing. Plugin: godot-mobile-plugins/godot-inapp-review v5.3.
+* **Updates:** 4 s after launch the game asks Play for a newer version. Optional update -> Google's own prompt, the
+  download happens in the background while playing, then an *Update ready - restart now?* dialog. Priority >= 4 updates
+  (set in Play Console / Publishing API) use the full-screen immediate flow. Plugin: own code in
+  `android_plugins/inapp_update` (Java, rebuild with `./gradlew installAddon` there; JDK 17 + Android SDK).
+* Both only work in builds **installed from Google Play** (internal / closed / open testing or production). A sideloaded
+  APK or the editor just logs. To test: upload to the Internal testing track, install from the Play link, then upload a
+  higher `version/code` and reopen the old build.
+* Every upload needs a higher `version/code` in `export_presets.cfg` (and an update is only offered when it is higher).
+* Headless checks: `godot --headless --path . res://tools/revtest.tscn`

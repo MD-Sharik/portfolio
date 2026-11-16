@@ -5,3 +5,7 @@ android/build/
 .gradle/
 *.jks
 *.keystore
+android_plugins/inapp_update/.gradle/
+android_plugins/inapp_update/build/
+android_plugins/inapp_update/plugin/build/
+.idea/

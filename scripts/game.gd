@@ -237,6 +237,8 @@ func _on_cleared() -> void:
 	_confetti()
 	_refresh_hint_badge()
 	get_tree().create_timer(0.35).timeout.connect(func(): _show_win(flawless))
+	# A happy moment: if the player has been around a while, ask for a Play Store review.
+	get_tree().create_timer(1.8).timeout.connect(func(): Review.maybe_request())
 
 
 # ------------------------------------------------------------------- dialogs
@@ -388,6 +390,7 @@ func _show_settings() -> void:
 	holder.add_child(seed_lbl)
 	_dialog("Settings", "", [
 		["Restart level", func(): _start_level(level_n), false],
+		["Rate the game", func(): Review.open_store_page(), false],
 		["Level select", _on_back, false],
 		["Close", _close_modal, true],
 	], holder)

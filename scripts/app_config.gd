@@ -1,7 +1,7 @@
 extends RefCounted
 ## Settings for the Play Store review prompt and in-app updates.
 
-const PACKAGE_ID := "com.arrowescapehard.game"
+const PACKAGE_ID := "com.hardestarrowescape.game"
 
 # ---- Review prompt (Google Play In-App Review) ----------------------------------------------
 # Asked right after the player clears a level, only when ALL of these are true:

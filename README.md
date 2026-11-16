@@ -79,7 +79,7 @@ tools/level_maker.gd   level maker CLI                       scripts/sfx.gd     
    enable *Use Gradle Build* if you want AAB for Play Store, create/choose a keystore, Export.
 3. The project is already portrait-locked, 1080x1920 base, GL Compatibility renderer.
 
-An export preset is already in `export_presets.cfg` (package `com.arrowescapehard.game`, arm64 + armv7,
+An export preset is already in `export_presets.cfg` (package `com.hardestarrowescape.game`, arm64 + armv7,
 no Gradle). Command-line export (needs the export templates, JDK 17 and Android SDK build-tools 35+):
 ```bash
 godot --headless --path . --export-debug "Android" build/ArrowEscape.apk
